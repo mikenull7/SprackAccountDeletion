@@ -44,7 +44,7 @@
     // 🔐 Replace with your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCCtfE7vOpiIaB59uPPC7CtsI-yQJcyWwQ",
-      authDomain: "Coffee_Finder.firebaseapp.com",
+      authDomain: "coffee-finder-f7768.firebaseapp.com",
       projectId: "coffee-finder-f7768",
     };
 
@@ -65,6 +65,7 @@
           });
           document.getElementById("status").innerText =
             "Deletion request submitted successfully.";
+          await auth.signOut(); // Optional: sign out user after request
         }
       } catch (error) {
         document.getElementById("status").innerText =
@@ -74,5 +75,3 @@
   </script>
 </body>
 </html>
-
-
