@@ -1,21 +1,51 @@
+<!-- delete_account.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Request Account Deletion - Sprack</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Delete My Sprack Account</title>
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 500px;
+      margin: auto;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+    #status {
+      margin-top: 1rem;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-  <h1>Request Account Deletion</h1>
-  <button onclick="requestDeletion()">Submit Request</button>
+  <h1>Request Sprack Account Deletion</h1>
+  <p>You must be signed in with your Sprack account to request deletion.</p>
+  <button onclick="requestDeletion()">Submit Deletion Request</button>
   <p id="status"></p>
 
   <script>
+    // 🔐 Your Firebase config (replace with yours)
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
+      apiKey: "AIzaSyCCtfE7vOpiIaB59uPPC7CtsI-yQJcyWwQ",
+      authDomain: "Coffee_Finder.firebaseapp.com",
+      projectId: "coffee-finder-f7768",
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -23,20 +53,23 @@
     const db = firebase.firestore();
 
     function requestDeletion() {
-      auth.onAuthStateChanged(user => {
+      auth.onAuthStateChanged((user) => {
         if (user) {
           db.collection('deletion_requests').add({
             uid: user.uid,
             email: user.email || 'Anonymous',
-            requestedAt: new Date()
+            requestedAt: new Date().toISOString()
           }).then(() => {
-            document.getElementById("status").innerText = "Request submitted.";
+            document.getElementById('status').innerText = "Your request has been submitted.";
+          }).catch((err) => {
+            document.getElementById('status').innerText = "Error: " + err.message;
           });
         } else {
-          document.getElementById("status").innerText = "You must be signed in.";
+          document.getElementById('status').innerText = "You must be signed in first.";
         }
       });
     }
   </script>
 </body>
 </html>
+
