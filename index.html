@@ -1,10 +1,9 @@
-<!-- delete_account.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Delete My Sprack Account</title>
+  <title>Request Sprack Account Deletion</title>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -14,19 +13,19 @@
   <style>
     body {
       font-family: sans-serif;
-      padding: 2rem;
       max-width: 500px;
-      margin: auto;
+      margin: 3rem auto;
+      padding: 1rem;
       text-align: center;
     }
     button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       font-size: 16px;
-      background: red;
+      margin-top: 1rem;
+      background-color: #d32f2f;
       color: white;
       border: none;
       cursor: pointer;
-      margin-top: 1rem;
     }
     #status {
       margin-top: 1rem;
@@ -35,13 +34,14 @@
   </style>
 </head>
 <body>
-  <h1>Request Sprack Account Deletion</h1>
-  <p>You must be signed in with your Sprack account to request deletion.</p>
-  <button onclick="requestDeletion()">Submit Deletion Request</button>
-  <p id="status"></p>
+  <h1>Delete Your Sprack Account</h1>
+  <p>Click below to sign in with your Sprack Google account and request deletion.</p>
+
+  <button onclick="signIn()">Sign In with Google</button>
+  <div id="status"></div>
 
   <script>
-    // 🔐 Your Firebase config (replace with yours)
+    // 🔐 Replace with your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCCtfE7vOpiIaB59uPPC7CtsI-yQJcyWwQ",
       authDomain: "Coffee_Finder.firebaseapp.com",
@@ -52,24 +52,27 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    function requestDeletion() {
-      auth.onAuthStateChanged((user) => {
+    async function signIn() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
         if (user) {
-          db.collection('deletion_requests').add({
+          await db.collection("deletion_requests").add({
             uid: user.uid,
-            email: user.email || 'Anonymous',
-            requestedAt: new Date().toISOString()
-          }).then(() => {
-            document.getElementById('status').innerText = "Your request has been submitted.";
-          }).catch((err) => {
-            document.getElementById('status').innerText = "Error: " + err.message;
+            email: user.email,
+            requestedAt: new Date().toISOString(),
           });
-        } else {
-          document.getElementById('status').innerText = "You must be signed in first.";
+          document.getElementById("status").innerText =
+            "Deletion request submitted successfully.";
         }
-      });
+      } catch (error) {
+        document.getElementById("status").innerText =
+          "Error: " + error.message;
+      }
     }
   </script>
 </body>
 </html>
+
 
