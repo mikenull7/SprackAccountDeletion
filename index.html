@@ -128,6 +128,70 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    <script>
+  // Your Firebase config here...
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Initialize Apple Sign In SDK - update these values
+  AppleID.auth.init({
+    clientId : 'com.sprack.coffee',           // Replace with your actual Apple Service ID
+    scope : 'name email',
+    redirectURI: 'https://mikenull7.github.io/SprackAccountDeletion/',  // Your actual page URL (must match Apple config)
+    usePopup: true
+  });
+
+  async function signInGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      if (user) {
+        await db.collection("deletion_requests").add({
+          uid: user.uid,
+          email: user.email,
+          provider: "google",
+          requestedAt: new Date().toISOString(),
+        });
+        showStatus("✅ Deletion request submitted successfully.", true);
+        await auth.signOut();
+      }
+    } catch (error) {
+      showStatus("❌ Error: " + error.message, false);
+    }
+  }
+
+ async function signInApple() {
+    try {
+      const response = await AppleID.auth.signIn();
+      const idToken = response.authorization.id_token;
+      const provider = new firebase.auth.OAuthProvider('apple.com');
+      const credential = provider.credential({ idToken });
+
+      const result = await auth.signInWithCredential(credential);
+      const user = result.user;
+      if (user) {
+        await db.collection("deletion_requests").add({
+          uid: user.uid,
+          email: user.email,
+          provider: "apple",
+          requestedAt: new Date().toISOString(),
+        });
+        showStatus("✅ Deletion request submitted successfully.", true);
+        await auth.signOut();
+      }
+    } catch (error) {
+      showStatus("❌ Error: " + error.message, false);
+    }
+  }
+
+  function showStatus(message, success) {
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = message;
+    statusEl.className = success ? "success" : "error";
+  }
+
     async function signInGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
