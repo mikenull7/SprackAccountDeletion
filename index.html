@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Request Sprack Account Deletion</title>
+  <title>Sprack Support & Account Deletion</title>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -12,11 +12,24 @@
 
   <style>
     body {
-      font-family: sans-serif;
-      max-width: 500px;
-      margin: 3rem auto;
-      padding: 1rem;
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: auto;
+      padding: 1.5rem;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
       text-align: center;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      color: #4CAF50;
+    }
+    section {
+      margin-bottom: 2.5rem;
+      border-top: 1px solid #ccc;
+      padding-top: 1.5rem;
     }
     button {
       padding: 12px 20px;
@@ -27,21 +40,52 @@
       border: none;
       cursor: pointer;
     }
+    button:hover {
+      background-color: #b71c1c;
+    }
+    a {
+      color: #4CAF50;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
     #status {
       margin-top: 1rem;
       color: green;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>Delete Your Sprack Account</h1>
-  <p>Click below to sign in with your Sprack Google account and request deletion.</p>
+  <header>
+    <h1>Sprack Support</h1>
+    <p>Need help? We’re here for you.</p>
+  </header>
 
-  <button onclick="signIn()">Sign In with Google</button>
-  <div id="status"></div>
+  <section id="contact">
+    <h2>📧 Contact Support</h2>
+    <p>Email us at <a href="mailto:mikenull7@gmail.com">mikenull7@gmail.com</a> for any app-related questions, feedback, or issues.</p>
+  </section>
+
+  <section id="faq">
+    <h2>❓ Frequently Asked Questions</h2>
+    <p><strong>Q:</strong> How do I reset my password?<br>
+    <strong>A:</strong> If you signed in with Google, reset your password through your Google account settings.</p>
+
+    <p><strong>Q:</strong> How do I report a bug?<br>
+    <strong>A:</strong> Send a description of the bug (and screenshots if possible) to our support email.</p>
+  </section>
+
+  <section id="delete-account">
+    <h2>🗑️ Delete Your Sprack Account</h2>
+    <p>If you wish to delete your account and remove your data, sign in below with your Sprack Google account and submit a deletion request.</p>
+    <button onclick="signIn()">Sign In with Google</button>
+    <div id="status"></div>
+  </section>
 
   <script>
-    // 🔐 Replace with your Firebase config
+    // Replace with your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCCtfE7vOpiIaB59uPPC7CtsI-yQJcyWwQ",
       authDomain: "coffee-finder-f7768.firebaseapp.com",
@@ -64,12 +108,12 @@
             requestedAt: new Date().toISOString(),
           });
           document.getElementById("status").innerText =
-            "Deletion request submitted successfully.";
-          await auth.signOut(); // Optional: sign out user after request
+            "✅ Deletion request submitted successfully.";
+          await auth.signOut();
         }
       } catch (error) {
         document.getElementById("status").innerText =
-          "Error: " + error.message;
+          "❌ Error: " + error.message;
       }
     }
   </script>
