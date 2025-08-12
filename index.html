@@ -139,7 +139,7 @@
 
       // Listen for Apple's postMessage response from popup
   window.addEventListener('message', async (event) => {
-    if (event.origin !== 'https://appleid.apple.com') return;  // Security check
+    if (event.origin !== 'https://appleid.apple.com/auth/authorize?client_id=com.sprack.web&redirect_uri=https%3A%2F%2Fcoffee-finder-f7768.firebaseapp.com%2F__%2Fauth%2Fhandler&response_type=code%20id_token&scope=name%20email&response_mode=web_message&frame_id=33354103-b3ff-4d90-a09c-e29a8646903f&m=11&v=1.5.5') return;  // Security check
 
     if (event.data && event.data.authorization) {
       try {
