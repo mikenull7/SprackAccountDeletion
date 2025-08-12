@@ -10,6 +10,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
+  <!-- Apple Sign In JS -->
+  <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,13 +38,24 @@
       padding: 12px 20px;
       font-size: 16px;
       margin-top: 1rem;
-      background-color: #d32f2f;
       color: white;
       border: none;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-    button:hover {
-      background-color: #b71c1c;
+    button.google {
+      background-color: #4285f4;
+    }
+    button.google:hover {
+      background-color: #357ae8;
+    }
+    button.apple {
+      background-color: black;
+    }
+    button.apple:hover {
+      background-color: #333333;
     }
     a {
       color: #4CAF50;
@@ -52,8 +66,13 @@
     }
     #status {
       margin-top: 1rem;
-      color: green;
       font-weight: bold;
+    }
+    #status.success {
+      color: green;
+    }
+    #status.error {
+      color: red;
     }
   </style>
 </head>
@@ -77,16 +96,23 @@
     <strong>A:</strong> Send a description of the bug (and screenshots if possible) to our support email.</p>
 
     <p><strong>Q:</strong> How is my information stored/used?<br>
-    <strong>A:</strong> Information that is stored are emails (for authentication purposes), first names and last initial (for "submitted by:" purposes), ultimately, are you signed it with Google, Apple, or a guest and who submitted a coffee shop.</p>
+    <strong>A:</strong> Information that is stored are emails (for authentication purposes), first names and last initial (for "submitted by:" purposes), ultimately, are you signed in with Google, Apple, or a guest and who submitted a coffee shop.</p>
 
-    <p><strong>Q:</strong> Is my information sold or used in any way NOT for the apps use?<br>
-    <strong>A:</strong> No, Never, Ever.  Information is only to make the app work for YOU and to publish coffee shops you want the community to enjoy.</p>
+    <p><strong>Q:</strong> Is my information sold or used in any way NOT for the app's use?<br>
+    <strong>A:</strong> No, Never, Ever. Information is only to make the app work for YOU and to publish coffee shops you want the community to enjoy.</p>
   </section>
 
   <section id="delete-account">
     <h2>🗑️ Delete Your Sprack Account</h2>
-    <p>If you wish to delete your account and remove your data, sign in below with your Sprack Google account and submit a deletion request.</p>
-    <button onclick="signIn()">Sign In with Google</button>
+    <p>If you wish to delete your account and remove your data, sign in below and submit a deletion request.</p>
+    <button class="google" onclick="signInGoogle()">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" alt="Google" width="20" height="20" />
+      Sign In with Google
+    </button>
+    <button class="apple" onclick="signInApple()">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" width="20" height="20" style="filter: invert(1);" />
+      Sign In with Apple
+    </button>
     <div id="status"></div>
   </section>
 
@@ -102,7 +128,7 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    async function signIn() {
+    async function signInGoogle() {
       const provider = new firebase.auth.GoogleAuthProvider();
       try {
         const result = await auth.signInWithPopup(provider);
@@ -111,16 +137,46 @@
           await db.collection("deletion_requests").add({
             uid: user.uid,
             email: user.email,
+            provider: "google",
             requestedAt: new Date().toISOString(),
           });
-          document.getElementById("status").innerText =
-            "✅ Deletion request submitted successfully.";
+          showStatus("✅ Deletion request submitted successfully.", true);
           await auth.signOut();
         }
       } catch (error) {
-        document.getElementById("status").innerText =
-          "❌ Error: " + error.message;
+        showStatus("❌ Error: " + error.message, false);
       }
+    }
+
+    async function signInApple() {
+      try {
+        const response = await AppleID.auth.signIn();
+        // response contains authorization object, id_token etc.
+        const idToken = response.authorization.id_token;
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        const credential = provider.credential({ idToken });
+
+        const result = await auth.signInWithCredential(credential);
+        const user = result.user;
+        if (user) {
+          await db.collection("deletion_requests").add({
+            uid: user.uid,
+            email: user.email,
+            provider: "apple",
+            requestedAt: new Date().toISOString(),
+          });
+          showStatus("✅ Deletion request submitted successfully.", true);
+          await auth.signOut();
+        }
+      } catch (error) {
+        showStatus("❌ Error: " + error.message, false);
+      }
+    }
+
+    function showStatus(message, success) {
+      const statusEl = document.getElementById("status");
+      statusEl.textContent = message;
+      statusEl.className = success ? "success" : "error";
     }
   </script>
 </body>
