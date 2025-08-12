@@ -137,6 +137,34 @@
     usePopup: true
   });
 
+      // Listen for Apple's postMessage response from popup
+  window.addEventListener('message', async (event) => {
+    if (event.origin !== 'https://appleid.apple.com') return;  // Security check
+
+    if (event.data && event.data.authorization) {
+      try {
+        const idToken = event.data.authorization.id_token;
+        const provider = new firebase.auth.OAuthProvider('apple.com');
+        const credential = provider.credential({ idToken });
+
+        const result = await auth.signInWithCredential(credential);
+        const user = result.user;
+        if (user) {
+          await db.collection("deletion_requests").add({
+            uid: user.uid,
+            email: user.email,
+            provider: "apple",
+            requestedAt: new Date().toISOString(),
+          });
+          showStatus("✅ Deletion request submitted successfully.", true);
+          await auth.signOut();
+        }
+      } catch (error) {
+        showStatus("❌ Error: " + error.message, false);
+      }
+    }
+  });
+    
   async function signInGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     try {
@@ -157,25 +185,10 @@
     }
   }
 
-  async function signInApple() {
+    async function signInApple() {
     try {
-      const response = await AppleID.auth.signIn();
-      const idToken = response.authorization.id_token;
-      const provider = new firebase.auth.OAuthProvider('apple.com');
-      const credential = provider.credential({ idToken });
-
-      const result = await auth.signInWithCredential(credential);
-      const user = result.user;
-      if (user) {
-        await db.collection("deletion_requests").add({
-          uid: user.uid,
-          email: user.email,
-          provider: "apple",
-          requestedAt: new Date().toISOString(),
-        });
-        showStatus("✅ Deletion request submitted successfully.", true);
-        await auth.signOut();
-      }
+      await AppleID.auth.signIn();
+      // No further code here - handled by message event
     } catch (error) {
       showStatus("❌ Error: " + error.message, false);
     }
