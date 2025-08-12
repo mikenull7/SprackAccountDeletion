@@ -138,35 +138,41 @@
     usePopup: true
   });
 
-async function signInApple() {
-  try {
-    const response = await AppleID.auth.signIn();
-    const idToken = response.authorization.id_token;
-    const provider = new firebase.auth.OAuthProvider('apple.com');
-    const credential = provider.credential({ idToken });
+ async function signInApple() {
+    try {
+      const response = await AppleID.auth.signIn();
+      const idToken = response.authorization.id_token;
+      const provider = new firebase.auth.OAuthProvider('apple.com');
+      const credential = provider.credential({ idToken });
 
-    const result = await auth.signInWithCredential(credential);
-    const user = result.user;
+      const result = await auth.signInWithCredential(credential);
+      const user = result.user;
 
-    // response.user only exists on the very first sign-in
-    const appleUserEmail = response.user ? response.user.email : null;
-    const emailToSave = user.email || appleUserEmail; // fallback to Apple's first sign-in email
+      // Apple provides user info only on the FIRST sign-in in response.user
+      // Use it if available, otherwise fallback to Firebase user email
+      const appleUserEmail = response.user ? response.user.email : null;
+      const emailToSave = user.email || appleUserEmail;
 
-    if (user) {
-      await db.collection("deletion_requests").add({
-        uid: user.uid,
-        email: emailToSave,
-        provider: "apple",
-        requestedAt: new Date().toISOString(),
-      });
-      showStatus("✅ Deletion request submitted successfully.", true);
-      await auth.signOut();
+      if (user) {
+        await db.collection("deletion_requests").add({
+          uid: user.uid,
+          email: emailToSave,
+          provider: "apple",
+          requestedAt: new Date().toISOString(),
+        });
+        showStatus("✅ Deletion request submitted successfully.", true);
+        await auth.signOut();
+      }
+    } catch (error) {
+      showStatus("❌ Error: " + error.message, false);
     }
-  } catch (error) {
-    showStatus("❌ Error: " + error.message, false);
   }
-}
 
+  function showStatus(message, success) {
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = message;
+    statusEl.className = success ? "success" : "error";
+  }
     // Listen for Apple's postMessage response (required for popup)
     window.addEventListener('message', async (event) => {
       if (event.origin !== 'https://appleid.apple.com') return;
